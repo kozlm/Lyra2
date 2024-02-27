@@ -1,24 +1,22 @@
 public class Parameters {
 
-    public static int N_COLS;
+    public static int nCols = 256;
 
-    public static int TIME_COST;
+    public static int timeCost = 100;
 
-    public static int MEMORY_COST;
+    public static int nRows = 10;
 
-    public static int KEY_LENGTH;
+    public static int fullRounds = 12;
 
-    public static int FULL_ROUNDS;
+    public static int halfRounds = 12;
 
-    public static int HALF_ROUNDS;
+    public static int blockLengthInLong = 8;
 
-    public static int BLOCK_LENGTH_IN_LONG;
+    public static int blockLengthInByte = blockLengthInLong * 8;
 
-    public static int BLOCK_LENGTH_IN_BYTES;
+    public static int rowLengthInLong = nCols * blockLengthInLong;
 
-    public static int ROW_LENGTH_IN_LONG;
-
-    public static int ROW_LENGTH_IN_BYTES;
+    public static int rowLengthInByte = rowLengthInLong * 8;
 
 }
 

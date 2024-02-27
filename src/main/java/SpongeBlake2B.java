@@ -5,21 +5,20 @@ public class SpongeBlake2B {
 
     long[] state;
 
-    /////////////////////////////////////////
-    private final int BLOCK_LENGTH_IN_LONG;
-    private final int BLOCK_LENGTH_IN_BYTES;
-    private final int N_COLS;
-    private final int FULL_ROUNDS;
-    private final int HALF_ROUNDS;
-    /////////////////////////////////////////
+    // Algorithm parameters
+    private final int blockLengthInLong;
+    private final int blockLengthInByte;
+    private final int nCols;
+    private final int fullRounds;
+    private final int halfRounds;
 
 
     public long addWordwise(long... longs) {
         long result = 0;
         for (long l : longs) {
-            result += switchEndian(l);
+            result += Lyra2.switchEndian(l);
         }
-        return switchEndian(result);
+        return Lyra2.switchEndian(result);
     }
 
 
@@ -27,18 +26,6 @@ public class SpongeBlake2B {
         ByteBuffer buffer = ByteBuffer.allocate(Long.BYTES);
         buffer.putLong(x);
         return buffer.array();
-    }
-
-
-    public static long switchEndian(final long x) {
-        return (x & 0x00000000000000FFL) << 56
-                | (x & 0x000000000000FF00L) << 40
-                | (x & 0x0000000000FF0000L) << 24
-                | (x & 0x00000000FF000000L) << 8
-                | (x & 0x000000FF00000000L) >>> 8
-                | (x & 0x0000FF0000000000L) >>> 24
-                | (x & 0x00FF000000000000L) >>> 40
-                | (x & 0xFF00000000000000L) >>> 56;
     }
 
 
@@ -54,11 +41,11 @@ public class SpongeBlake2B {
 
 
     public SpongeBlake2B() {
-        this.BLOCK_LENGTH_IN_LONG = Parameters.BLOCK_LENGTH_IN_LONG;
-        this.BLOCK_LENGTH_IN_BYTES = Parameters.BLOCK_LENGTH_IN_BYTES;
-        this.N_COLS = Parameters.N_COLS;
-        this.FULL_ROUNDS = Parameters.FULL_ROUNDS;
-        this.HALF_ROUNDS = Parameters.HALF_ROUNDS;
+        this.blockLengthInLong = Parameters.blockLengthInLong;
+        this.blockLengthInByte = Parameters.blockLengthInByte;
+        this.nCols = Parameters.nCols;
+        this.fullRounds = Parameters.fullRounds;
+        this.halfRounds = Parameters.halfRounds;
         state = new long[16];
         for (int i = 0; i < 8; i++) {
             state[i] = 0;
@@ -83,33 +70,34 @@ public class SpongeBlake2B {
 
     private void functionG(int a, int b, int c, int d) {
         state[a] = addWordwise(state[a], state[b]);
-        state[d] = switchEndian(Long.rotateRight(switchEndian(state[d] ^ state[a]), 32));
+        state[d] = Lyra2.switchEndian(Long.rotateRight(Lyra2.switchEndian(state[d] ^ state[a]), 32));
 
         state[c] = addWordwise(state[c], state[d]);
-        state[b] = switchEndian(Long.rotateRight(switchEndian(state[b] ^ state[c]), 24));
+        state[b] = Lyra2.switchEndian(Long.rotateRight(Lyra2.switchEndian(state[b] ^ state[c]), 24));
 
         state[a] = addWordwise(state[a], state[b]);
-        state[d] = switchEndian(Long.rotateRight(switchEndian(state[d] ^ state[a]), 16));
+        state[d] = Lyra2.switchEndian(Long.rotateRight(Lyra2.switchEndian(state[d] ^ state[a]), 16));
 
         state[c] = addWordwise(state[c], state[d]);
-        state[b] = switchEndian(Long.rotateRight(switchEndian(state[b] ^ state[c]), 63));
+        state[b] = Lyra2.switchEndian(Long.rotateRight(Lyra2.switchEndian(state[b] ^ state[c]), 63));
     }
 
 
-    public void squeeze(byte[] out, int amount) {
+    public byte[] squeeze(int amount) {
         int iterator = 0;
+        byte[] out = new byte[amount];
         //whole blocks
-        int numberOfBlocks = amount / BLOCK_LENGTH_IN_BYTES;
-        int rest = amount % BLOCK_LENGTH_IN_BYTES;
+        int numberOfBlocks = amount / blockLengthInByte;
+        int rest = amount % blockLengthInByte;
         for (int i = 0; i < numberOfBlocks; i++) {
-            for (int j = 0; j < BLOCK_LENGTH_IN_LONG; j++) {
+            for (int j = 0; j < blockLengthInLong; j++) {
                 byte[] bytes = longToBytes(state[j]);
                 for (int k = 0; k < 8; k++) {
                     out[iterator] = bytes[k];
                     iterator++;
                 }
             }
-            shuffle(FULL_ROUNDS);
+            shuffle(fullRounds);
         }
         //rest
         int longsInRest = rest / 8;
@@ -127,6 +115,7 @@ public class SpongeBlake2B {
             out[iterator] = bytes[i];
             iterator++;
         }
+        return out;
     }
 
 
@@ -134,34 +123,34 @@ public class SpongeBlake2B {
         for (int i = 0; i < length; i++) {
             state[i] ^= in[i + offset];
         }
-        shuffle(FULL_ROUNDS);
+        shuffle(fullRounds);
     }
 
 
     public void reducedSqueezeRow(long[] out) {
 
-        for (int i = 0; i < N_COLS; i++) {
+        for (int i = 0; i < nCols; i++) {
             int iterator = 0;
-            for (int j = 0; j < BLOCK_LENGTH_IN_LONG; j++) {
+            for (int j = 0; j < blockLengthInLong; j++) {
                 out[iterator] = state[j];
                 iterator++;
             }
-            shuffle(HALF_ROUNDS);
+            shuffle(halfRounds);
         }
     }
 
 
     public void reducedDuplexRow1And2(long[] out, long[] in) {
         int iteratorIn = 0;
-        for (int i = 0; i < N_COLS; i++) {
-            int iteratorOut = (N_COLS - 1 - i) * BLOCK_LENGTH_IN_LONG;
-            for (int j = 0; j < BLOCK_LENGTH_IN_LONG; j++) {
+        for (int i = 0; i < nCols; i++) {
+            int iteratorOut = (nCols - 1 - i) * blockLengthInLong;
+            for (int j = 0; j < blockLengthInLong; j++) {
                 state[j] ^= in[iteratorIn];
                 iteratorIn++;
             }
-            iteratorIn -= BLOCK_LENGTH_IN_LONG;
-            shuffle(HALF_ROUNDS);
-            for (int j = 0; j < BLOCK_LENGTH_IN_LONG; j++) {
+            iteratorIn -= blockLengthInLong;
+            shuffle(halfRounds);
+            for (int j = 0; j < blockLengthInLong; j++) {
                 out[iteratorOut] = state[j] ^ in[iteratorIn];
                 iteratorIn++;
                 iteratorOut++;
@@ -170,45 +159,45 @@ public class SpongeBlake2B {
     }
 
 
-    public void reducedDuplexFillingLoop(long[] row1, long[] row0, long[] prev0, long[] prev1) {
-        for (int i = 0; i < N_COLS; i++) {
-            for (int j = 0; j < BLOCK_LENGTH_IN_LONG; j++) {
-                int offset = i * BLOCK_LENGTH_IN_LONG;
+    public void reducedDuplexFillingLoop(long[] row0, long[] row1, long[] prev0, long[] prev1) {
+        for (int i = 0; i < nCols; i++) {
+            for (int j = 0; j < blockLengthInLong; j++) {
+                int offset = i * blockLengthInLong;
                 state[j] ^= addWordwise(row1[offset + j], prev0[offset + j], prev1[offset + j]);
 
             }
-            shuffle(HALF_ROUNDS);
-            for (int j = 0; j < BLOCK_LENGTH_IN_LONG; j++) {
-                int offset = i * BLOCK_LENGTH_IN_LONG;
-                row0[(N_COLS - 1 - i) * BLOCK_LENGTH_IN_LONG + j]
+            shuffle(halfRounds);
+            for (int j = 0; j < blockLengthInLong; j++) {
+                int offset = i * blockLengthInLong;
+                row0[(nCols - 1 - i) * blockLengthInLong + j]
                         = prev0[offset + j] ^ state[j];
             }
-            for (int j = 0; j < BLOCK_LENGTH_IN_LONG; j++) {
-                int offset = i * BLOCK_LENGTH_IN_LONG;
-                row1[offset + j] ^= state[(j + 2) % BLOCK_LENGTH_IN_LONG];
+            for (int j = 0; j < blockLengthInLong; j++) {
+                int offset = i * blockLengthInLong;
+                row1[offset + j] ^= state[(j + 2) % blockLengthInLong];
             }
         }
     }
 
 
-    public void reducedDuplexWandering(long[] row1, long[] row0, long[] prev0, long[] prev1) {
-        for (int i = 0; i < N_COLS; i++) {
-            int col0 = (int) Long.remainderUnsigned(switchEndian(state[4]),
-                    N_COLS);
-            int col1 = (int) Long.remainderUnsigned(switchEndian(state[6]),
-                    N_COLS);
-            int offset = i * BLOCK_LENGTH_IN_LONG;
-            for (int j = 0; j < BLOCK_LENGTH_IN_LONG; j++) {
+    public void reducedDuplexWandering(long[] row0, long[] row1, long[] prev0, long[] prev1) {
+        for (int i = 0; i < nCols; i++) {
+            int col0 = (int) Long.remainderUnsigned(Lyra2.switchEndian(state[4]),
+                    nCols);
+            int col1 = (int) Long.remainderUnsigned(Lyra2.switchEndian(state[6]),
+                    nCols);
+            int offset = i * blockLengthInLong;
+            for (int j = 0; j < blockLengthInLong; j++) {
                 state[j] ^= addWordwise(row0[offset + j], row1[offset + j]
-                        , prev0[BLOCK_LENGTH_IN_LONG * col0 + j]
-                        , prev1[BLOCK_LENGTH_IN_LONG * col1 + j]);
+                        , prev0[blockLengthInLong * col0 + j]
+                        , prev1[blockLengthInLong * col1 + j]);
             }
-            shuffle(HALF_ROUNDS);
-            for (int j = 0; j < BLOCK_LENGTH_IN_LONG; j++) {
+            shuffle(halfRounds);
+            for (int j = 0; j < blockLengthInLong; j++) {
                 row0[offset + j] ^= state[j];
             }
-            for (int j = 0; j < BLOCK_LENGTH_IN_LONG; j++) {
-                row1[offset + j] ^= state[(j + 2) % BLOCK_LENGTH_IN_LONG];
+            for (int j = 0; j < blockLengthInLong; j++) {
+                row1[offset + j] ^= state[(j + 2) % blockLengthInLong];
             }
         }
     }
