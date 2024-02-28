@@ -1,4 +1,5 @@
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.util.Arrays;
 
 public class Lyra2 {
@@ -38,6 +39,7 @@ public class Lyra2 {
         int row1 = 1;
         int row0 = 3;
 
+        byte[] test = getPaddedData(pwdString, saltString, hashlength, timeCost, nRows, nCols);
         long[] buffer = bytesToLongs(getPaddedData(pwdString, saltString, hashlength, timeCost, nRows, nCols));
 
         //fill matrix with buffer data
@@ -59,8 +61,8 @@ public class Lyra2 {
         //Setup phase
         //-----------
         sponge.reducedSqueezeRow(matrix[0]);
-        sponge.reducedDuplexRow1And2(matrix[0], matrix[1]);
-        sponge.reducedDuplexRow1And2(matrix[1], matrix[2]);
+        sponge.reducedDuplexRow1And2(matrix[1], matrix[0]);
+        sponge.reducedDuplexRow1And2(matrix[2], matrix[1]);
 
         //Filling loop
         for (row0 = 3; row0 < nRows; row0++) {
@@ -90,7 +92,7 @@ public class Lyra2 {
 
         //Wrap-up phase
         //-------------
-        sponge.absorbBlock(matrix[row0], blockLengthInLong, 0);
+        sponge.absorbBlock(matrix[row0],0, blockLengthInLong);
 
         byte[] hash = sponge.squeeze(hashlength);
         return hash;
@@ -162,6 +164,7 @@ public class Lyra2 {
 
     public static byte[] intToBytes(int i) {
         ByteBuffer buffer = ByteBuffer.allocate(Integer.BYTES);
+        buffer.order(ByteOrder.LITTLE_ENDIAN);
         buffer.putInt(i);
         return buffer.array();
     }

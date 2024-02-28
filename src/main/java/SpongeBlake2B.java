@@ -49,7 +49,7 @@ public class SpongeBlake2B {
         state = new long[16];
         for (int i = 0; i < 8; i++) {
             state[i] = 0;
-            state[i + 8] = InitiazationVector[i];
+            state[i + 8] = Lyra2.switchEndian(InitiazationVector[i]);
         }
     }
 
@@ -119,7 +119,7 @@ public class SpongeBlake2B {
     }
 
 
-    public void absorbBlock(long[] in, int length, int offset) {
+    public void absorbBlock(long[] in, int offset, int length) {
         for (int i = 0; i < length; i++) {
             state[i] ^= in[i + offset];
         }
@@ -130,10 +130,8 @@ public class SpongeBlake2B {
     public void reducedSqueezeRow(long[] out) {
 
         for (int i = 0; i < nCols; i++) {
-            int iterator = 0;
             for (int j = 0; j < blockLengthInLong; j++) {
-                out[iterator] = state[j];
-                iterator++;
+                out[(nCols - 1 - i) * blockLengthInLong + j] = state[j];
             }
             shuffle(halfRounds);
         }
