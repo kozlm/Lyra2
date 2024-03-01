@@ -25,7 +25,7 @@ public class Lyra2 {
         this.halfRounds = halfRounds;
     }
 
-    public byte[] hash(String pwdString, String saltString, int hashlength) {
+    public byte[] hash(String pwdString, String saltString, int hashLength) {
 
         //Bootstrapping phase
         //-------------------
@@ -41,7 +41,7 @@ public class Lyra2 {
         int row1 = 1;
         int row0;
 
-        long[] buffer = bytesToLongs(getPaddedData(pwdString, saltString, hashlength, timeCost, nRows, nCols));
+        long[] buffer = bytesToLongs(getPaddedData(pwdString, saltString, hashLength, timeCost, nRows, nCols));
 
         //fill matrix with buffer data
         int iterator = 0, x = 0, y = 0;
@@ -96,7 +96,7 @@ public class Lyra2 {
         //-------------
         sponge.absorbBlock(Arrays.copyOfRange(matrix[row0], 0, blockLengthInLong));
 
-        return sponge.squeezeBytes(hashlength);
+        return sponge.squeezeBytes(hashLength);
     }
 
     private byte[] getPaddedData(String passwordString, String saltString, int kLen, int t, int r, int c) {
