@@ -1,8 +1,14 @@
+package algorithm;
+
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.Arrays;
 
 public class Lyra2 {
+    public enum SpongeAlgorithm{
+        BlaMka,
+        Blake2B
+    }
 
     // Algorithm parameters
     private final int blockLengthInLong;
@@ -13,12 +19,14 @@ public class Lyra2 {
     private final int rowLengthInLong;
     private final int fullRounds;
     private final int halfRounds;
+    private final SpongeAlgorithm spongeAlgorithm;
 
-    public Lyra2(int blockLengthInLong, int nCols, int nRows, int timeCost, int fullRounds, int halfRounds) {
+    public Lyra2(int blockLengthInLong, int nCols, int nRows, int timeCost, int fullRounds, int halfRounds, SpongeAlgorithm spongeAlgorithm) {
         this.blockLengthInLong = blockLengthInLong;
         this.blockLengthInByte = blockLengthInLong * 8;
         this.nCols = nCols;
         this.nRows = nRows;
+        this.spongeAlgorithm = spongeAlgorithm;
         this.rowLengthInLong = nCols * blockLengthInLong;
         this.timeCost = timeCost;
         this.fullRounds = fullRounds;
@@ -30,7 +38,10 @@ public class Lyra2 {
         //Bootstrapping phase
         //-------------------
         long[][] matrix = new long[nRows][rowLengthInLong];
-        SpongeBlake2B sponge = new SpongeBlake2B(blockLengthInLong, nCols, fullRounds, halfRounds);
+
+        Sponge sponge;
+        if (spongeAlgorithm == SpongeAlgorithm.Blake2B) sponge = new SpongeBlake2B(blockLengthInLong, nCols, fullRounds, halfRounds);
+        else sponge = new SpongeBlaMka(blockLengthInLong, nCols, fullRounds, halfRounds);
 
         int gap = 1;
         int stp = 1;
@@ -154,6 +165,13 @@ public class Lyra2 {
         return data;
     }
 
+    public static long leastSignificantWord(long x) {
+        byte[] words = longToBytes(x);
+        for (int i = 0; i < 4; i++) {
+            words[i]=0;
+        }
+        return ByteBuffer.wrap(words).getLong();
+    }
 
     public static String byteArrayToString(byte[] bytes) {
         StringBuilder builder = new StringBuilder();

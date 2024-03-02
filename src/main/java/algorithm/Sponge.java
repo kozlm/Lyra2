@@ -1,5 +1,6 @@
-public class SpongeBlake2B {
+package algorithm;
 
+public abstract class Sponge {
     long[] state;
 
     // Algorithm parameters
@@ -21,7 +22,7 @@ public class SpongeBlake2B {
             0x5be0cd19137e2179L};
 
 
-    public SpongeBlake2B(int blockLengthInLong, int nCols, int fullRounds, int halfRounds) {
+    public Sponge(int blockLengthInLong, int nCols, int fullRounds, int halfRounds) {
         this.blockLengthInLong = blockLengthInLong;
         this.blockLengthInByte = blockLengthInLong * 8;
         this.nCols = nCols;
@@ -50,19 +51,7 @@ public class SpongeBlake2B {
     }
 
 
-    private void gFunction(int a, int b, int c, int d) {
-        state[a] = Lyra2.addWordwise(state[a], state[b]);
-        state[d] = Lyra2.switchEndian(Long.rotateRight(Lyra2.switchEndian(state[d] ^ state[a]), 32));
-
-        state[c] = Lyra2.addWordwise(state[c], state[d]);
-        state[b] = Lyra2.switchEndian(Long.rotateRight(Lyra2.switchEndian(state[b] ^ state[c]), 24));
-
-        state[a] = Lyra2.addWordwise(state[a], state[b]);
-        state[d] = Lyra2.switchEndian(Long.rotateRight(Lyra2.switchEndian(state[d] ^ state[a]), 16));
-
-        state[c] = Lyra2.addWordwise(state[c], state[d]);
-        state[b] = Lyra2.switchEndian(Long.rotateRight(Lyra2.switchEndian(state[b] ^ state[c]), 63));
-    }
+    public abstract void gFunction(int a, int b, int c, int d);
 
 
     public byte[] squeezeBytes(int amount) {
@@ -177,4 +166,3 @@ public class SpongeBlake2B {
         }
     }
 }
-

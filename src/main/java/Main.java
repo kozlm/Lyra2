@@ -1,8 +1,9 @@
+import algorithm.Lyra2;
 import com.beust.jcommander.JCommander;
+import commandline.LyraArgs;
 
 public class Main {
     public static void main(String[] args) {
-
         LyraArgs lyraArgs = new LyraArgs();
         JCommander jc = JCommander.newBuilder()
                 .addObject(lyraArgs)
@@ -17,8 +18,8 @@ public class Main {
                 lyraArgs.getnRows(),
                 lyraArgs.getTimeCost(),
                 lyraArgs.getFullRounds(),
-                lyraArgs.getHalfRounds()
-        );
+                lyraArgs.getHalfRounds(),
+                lyraArgs.getAlgorithm());
         byte[] hash = lyra.hash(
                 lyraArgs.getPassword(),
                 lyraArgs.getSalt(),

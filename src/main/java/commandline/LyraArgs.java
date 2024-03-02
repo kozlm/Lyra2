@@ -1,3 +1,6 @@
+package commandline;
+
+import algorithm.Lyra2;
 import com.beust.jcommander.Parameter;
 
 public class LyraArgs {
@@ -9,6 +12,14 @@ public class LyraArgs {
             required = true
     )
     private String password;
+
+
+    @Parameter(
+            names = {"-a", "--algorithm"},
+            description = "sponge algorithm [BlaMka or Blake2B]",
+            required = true
+    )
+    private Lyra2.SpongeAlgorithm algorithm;
 
     @Parameter(
             names = {"-s", "--salt"},
@@ -78,6 +89,10 @@ public class LyraArgs {
 
     public int getFullRounds() {
         return fullRounds;
+    }
+
+    public Lyra2.SpongeAlgorithm getAlgorithm() {
+        return algorithm;
     }
 
     public int getHalfRounds() {
