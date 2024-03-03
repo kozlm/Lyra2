@@ -5,6 +5,8 @@ import java.nio.ByteOrder;
 import java.util.Arrays;
 
 public class Lyra2 {
+    public static int BLOCK_LENGTH_SAFE_LONG = 8;
+    public static int BLOCK_LENGTH_SAFE_BYTE = 64;
     public enum SpongeAlgorithm{
         BlaMka,
         Blake2B
@@ -66,8 +68,8 @@ public class Lyra2 {
             }
         }
 
-        for (int i = 0; i < buffer.length; i += blockLengthInLong) {
-            long[] block = Arrays.copyOfRange(buffer, i, i + blockLengthInLong);
+        for (int i = 0; i < buffer.length; i += BLOCK_LENGTH_SAFE_LONG) {
+            long[] block = Arrays.copyOfRange(buffer, i, i + BLOCK_LENGTH_SAFE_LONG);
             sponge.absorbBlock(block);
         }
 
@@ -114,8 +116,8 @@ public class Lyra2 {
         byte[] pwd = passwordString.getBytes();
         byte[] salt = saltString.getBytes();
 
-        int nBlocksInput = ((salt.length + pwd.length + 6 * Integer.BYTES) / blockLengthInByte) + 1;
-        byte[] data = new byte[nBlocksInput * blockLengthInByte];
+        int nBlocksInput = ((salt.length + pwd.length + 6 * Integer.BYTES) / BLOCK_LENGTH_SAFE_BYTE) + 1;
+        byte[] data = new byte[nBlocksInput * BLOCK_LENGTH_SAFE_BYTE];
 
         int iterator = 0;
         //put pwd
