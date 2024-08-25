@@ -8,7 +8,7 @@ public class LyraArgs {
     private boolean help;
 
     @Parameter(
-            description = "'password to hash'",
+            description = "[password to hash]",
             required = true
     )
     private String password;
@@ -16,7 +16,7 @@ public class LyraArgs {
 
     @Parameter(
             names = {"-a", "--algorithm"},
-            description = "sponge algorithm [BlaMka or Blake2B]",
+            description = "sponge algorithm ('BlaMka' or 'Blake2B')",
             required = true
     )
     private Lyra2.SpongeAlgorithm algorithm;
