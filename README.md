@@ -1,12 +1,10 @@
-# Lyra2 Algorithm implementation in Java
+# Lyra2 algorithm implementation in Java
 
-## Overview
-
-This project implements the Lyra2 password hashing algorithm on a single thread in Java.
-One of the goals of this project is to follow as many OOP good practices as possible,
+Implementation of the Lyra2 password hashing algorithm on a single thread in Java.
+One of the goals of this project was to follow OOP good practices,
 while not making the code too complicated.
 
-More information about [Lyra2][2] and the official Lyra2 [documentation][1].
+More information about [Lyra2][2] and the official [Lyra2 documentation][1].
 
 ## Features
 
@@ -15,20 +13,24 @@ More information about [Lyra2][2] and the official Lyra2 [documentation][1].
 - **High Security**
 
 ## Usage
-To compile use the command:
-```bash
-mvn package
-```
 
-After compilation use the following syntax:
-```bash
-java -jar ./target/Lyra2-1.0-SNAPSHOT.jar [options] [password to hash]
-```
-
-For more information about the syntax use:
-```bash
-java -jar ./target/Lyra2-1.0-SNAPSHOT.jar --help
-```
+1. Clone the repository and go to the project directory:
+  ```bash
+  git clone https://github.com/kozlm/Lyra2.git
+  cd Lyra2
+  ```
+2. Compile the project:
+  ```bash
+  mvn package
+  ```
+3. Use the following syntax to hash your password:
+  ```bash
+  java -jar ./target/Lyra2-1.0-SNAPSHOT.jar [options] [password to hash]
+  ```
+  - For more information about the syntax use:
+    ```bash
+    java -jar ./target/Lyra2-1.0-SNAPSHOT.jar --help
+    ```
 
 ### Required Options
 
